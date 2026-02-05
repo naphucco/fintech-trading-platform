@@ -1,0 +1,230 @@
+# ============================
+# NODE.JS & DEPENDENCIES
+# ============================
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Optional npm cache directory
+.npm
+
+# Optional ESLint cache
+.eslintcache
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# ============================
+# ENVIRONMENT VARIABLES
+# ============================
+
+# Environment variables (KHÔNG BAO GIỜ commit!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Environment variables từ Docker
+.env.docker
+.env.kubernetes
+
+# ============================
+# IDE & EDITOR FILES
+# ============================
+
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains IDEs (IntelliJ, WebStorm, etc.)
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ============================
+# OPERATING SYSTEM FILES
+# ============================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ============================
+# LOG FILES
+# ============================
+
+# Application logs
+logs/
+*.log
+npm-debug.log*
+
+# pm2 logs
+.pm2/
+
+# ============================
+# BUILD & DISTRIBUTION
+# ============================
+
+# Build outputs
+dist/
+build/
+out/
+release/
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# ============================
+# DATABASE & STORAGE
+# ============================
+
+# Local SQLite databases
+*.sqlite
+*.sqlite3
+*.db
+
+# Redis dump files
+dump.rdb
+
+# ============================
+# SSL/TLS CERTIFICATES
+# ============================
+
+# SSL certificates (KHÔNG BAO GIỜ commit!)
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+
+# ============================
+# TESTING
+# ============================
+
+# Jest
+jest-cache/
+jest-output/
+
+# Mocha
+.mocharc.js
+
+# ============================
+# DOCKER
+# ============================
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# ============================
+# WEB SOCKET SPECIFIC
+# ============================
+
+# Client connection logs
+connection_logs/
+client_sessions/
+
+# Rate limiting logs
+rate_limit_logs/
+
+# Market data cache
+market_data_cache/
+*.cache
+
+# Order book snapshots
+orderbook_snapshots/
+
+# ============================
+# TEMPORARY FILES
+# ============================
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+temp/
+
+# ============================
+# BACKUP FILES
+# ============================
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# ============================
+# CONFIG FILES (DEV ONLY)
+# ============================
+
+# Development configs (có thể override bằng .env)
+config/development.json
+config/local.json
+
+# Test configs
+config/test.json
+
+# ============================
+# PERFORMANCE & PROFILING
+# ============================
+
+# CPU profiles
+*.cpuprofile
+
+# Heap dumps
+*.heapsnapshot
+
+# ============================
+# MISC
+# ============================
+
+# Package lock files (trừ package-lock.json)
+yarn.lock
+pnpm-lock.yaml
+
+# OS generated files
+ehthumbs.db
+Icon?
+
+# Custom project files
+.project_private/
+secrets/
+private/

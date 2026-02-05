@@ -1,0 +1,17 @@
+// Renderer process
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Hello Electron!</title>
+</head>
+<body>
+    <h1>Hello Electron!</h1>
+    <p>We are using Node.js <span id="node-version"></span></p>
+    
+    <script>
+        // Có thể dùng Node.js APIs ở đây
+        document.getElementById('node-version').textContent = process.versions.node;
+    </script>
+</body>
+</html>
