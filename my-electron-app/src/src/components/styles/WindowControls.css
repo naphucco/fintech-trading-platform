@@ -1,0 +1,53 @@
+/**
+ * FILE: src/src/components/styles/WindowControls.css
+ * CHỨC NĂNG: Styling cho window controls của Electron
+ * - Styling nút minimize, maximize, quit
+ * - Hiệu ứng hover và màu sắc
+ */
+
+/* Window Controls */
+.window-controls {
+  margin: 30px 0;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.window-controls button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1em;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  min-width: 120px;
+}
+
+.window-controls button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.window-controls button:last-child {
+  background: linear-gradient(135deg, #F44336 0%, #C62828 100%);
+}
+
+.window-controls button:last-child:hover {
+  box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+}
+
+/* Responsive cho Window Controls */
+@media (max-width: 768px) {
+  .window-controls {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .window-controls button {
+    width: 100%;
+    max-width: 300px;
+  }
+}

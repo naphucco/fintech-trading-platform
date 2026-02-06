@@ -1,0 +1,93 @@
+/**
+ * FILE: src/src/components/styles/ProcessingOrders.css
+ * CHỨC NĂNG: Styling cho processing orders section
+ * - Styling orders đang được xử lý
+ * - Animation và progress bar
+ * - Màu sắc cảnh báo
+ */
+
+/* Processing Orders Section */
+.processing-orders {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 25px;
+  margin-top: 20px;
+}
+
+.processing-orders h3 {
+  margin-top: 0;
+  color: #FFC107;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.processing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.processing-item {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+  border-radius: 10px;
+  padding: 20px;
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: rgba(255, 193, 7, 0.2); }
+  50% { border-color: rgba(255, 193, 7, 0.5); }
+}
+
+.processing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #FFC107;
+}
+
+.processing-status {
+  font-size: 0.9em;
+  padding: 4px 8px;
+  background: rgba(255, 193, 7, 0.2);
+  border-radius: 4px;
+}
+
+.processing-message {
+  color: #a0aec0;
+  font-size: 0.9em;
+  margin-bottom: 10px;
+}
+
+.processing-time {
+  color: #a0aec0;
+  font-size: 0.85em;
+  margin-bottom: 15px;
+}
+
+.processing-progress {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 30%;
+  background: linear-gradient(90deg, #FFC107, #FF9800);
+  border-radius: 3px;
+  animation: progress-animation 2s infinite ease-in-out;
+}
+
+@keyframes progress-animation {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(400%); }
+}

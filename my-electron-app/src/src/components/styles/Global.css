@@ -1,0 +1,98 @@
+/**
+ * FILE: src/src/components/styles/Global.css
+ * CHỨC NĂNG: Global styles và utility classes
+ * - Root variables và global styles
+ * - Utility classes chung
+ * - Responsive breakpoints chung
+ */
+
+/* ==================== 1. ROOT & GLOBAL STYLES ==================== */
+:root {
+  --primary-bg: #1a1a2e;
+  --secondary-bg: #16213e;
+  --accent-color: #00ff88;
+  --error-color: #ff4444;
+  --warning-color: #FFC107;
+  --buy-color: #4CAF50;
+  --sell-color: #F44336;
+  --text-primary: #ffffff;
+  --text-secondary: #a0aec0;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.05);
+}
+
+.App {
+  text-align: center;
+  background-color: var(--primary-bg);
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+}
+
+.App-header {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ==================== 2. TRADING CONTAINER LAYOUT ==================== */
+.trading-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 900px) {
+  .trading-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==================== 3. UTILITY CLASSES ==================== */
+.positive { 
+  color: var(--accent-color);
+  font-weight: bold;
+}
+
+.negative { 
+  color: var(--error-color);
+  font-weight: bold;
+}
+
+/* Loading animation */
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+.loading {
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0.05) 25%, 
+    rgba(255, 255, 255, 0.1) 50%, 
+    rgba(255, 255, 255, 0.05) 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ==================== 4. RESPONSIVE DESIGN ==================== */
+@media (max-width: 768px) {
+  .App-header {
+    padding: 15px;
+  }
+  
+  .trading-container {
+    gap: 20px;
+  }
+  
+  .connection-status {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  .connection-controls {
+    justify-content: center;
+  }
+}

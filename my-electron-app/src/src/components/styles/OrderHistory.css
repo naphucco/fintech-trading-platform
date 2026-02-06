@@ -1,0 +1,183 @@
+/**
+ * FILE: src/src/components/styles/OrderHistory.css
+ * CHỨC NĂNG: Styling cho component OrderHistory
+ * - Styling danh sách orders và history
+ * - Màu sắc theo trạng thái order
+ * - Scrollbar và animation
+ */
+
+/* Orders History */
+.orders-history {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 25px;
+  margin-top: 20px;
+}
+
+.orders-history h3 {
+  margin-top: 0;
+  color: #00ff88;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.no-orders {
+  color: #a0aec0;
+  font-style: italic;
+  padding: 30px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+}
+
+.orders-list {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Scrollbar styling */
+.orders-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.orders-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.orders-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 136, 0.3);
+  border-radius: 4px;
+}
+
+.orders-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 136, 0.5);
+}
+
+/* Order Item Styling */
+.order-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 15px;
+  text-align: left;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.order-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  border-color: rgba(0, 255, 136, 0.2);
+}
+
+/* Order Header */
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.order-id {
+  font-family: 'Courier New', monospace;
+  color: #a0aec0;
+  font-size: 0.85em;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.order-id:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.order-status {
+  font-weight: bold;
+  font-size: 0.85em;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+
+/* Order Details */
+.order-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.95em;
+}
+
+.detail-row.time {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  font-size: 0.85em;
+  color: #a0aec0;
+}
+
+.detail-label {
+  color: #a0aec0;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Status-specific colors for BUY/SELL */
+.detail-value.buy {
+  color: #00ff88;
+  background: rgba(0, 255, 136, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.detail-value.sell {
+  color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* Error row styling */
+.detail-row.error {
+  color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+  border: 1px solid rgba(255, 68, 68, 0.2);
+}
+
+.detail-row.error .detail-label {
+  color: #ff4444;
+}
+
+.detail-row.error .detail-value {
+  color: #ff8888;
+  font-weight: normal;
+}

@@ -1,0 +1,98 @@
+/**
+ * FILE: src/src/components/styles/ConnectionStatus.css
+ * CHỨC NĂNG: Styling cho component ConnectionStatus
+ * - Styling trạng thái kết nối WebSocket
+ * - Nút điều khiển kết nối
+ * - Indicator và animation
+ */
+
+/* Connection Status */
+.connection-status {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px 20px;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+  /* Thêm shadow cho depth */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.status-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-right: 10px;
+  display: inline-block;
+  /* Thêm glow effect cho các trạng thái */
+  box-shadow: 0 0 8px currentColor;
+}
+
+.status-indicator.connected { 
+  background-color: #00ff88;
+  color: #00ff88;
+}
+
+.status-indicator.connecting { 
+  background-color: #FFC107;
+  color: #FFC107;
+  animation: pulse 1.5s infinite;
+}
+
+.status-indicator.disconnected { 
+  background-color: #F44336;
+  color: #F44336;
+}
+
+.status-indicator.error { 
+  background-color: #9C27B0;
+  color: #9C27B0;
+}
+
+@keyframes pulse {
+  0% { 
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+  100% { 
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.connection-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.connection-controls button {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9em;
+  transition: all 0.3s ease;
+  /* Gradients cho buttons */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.connection-controls button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.connection-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #6c757d;
+}

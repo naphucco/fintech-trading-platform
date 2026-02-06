@@ -1,0 +1,194 @@
+/**
+ * FILE: src/src/components/styles/MarketData.css
+ * CHỨC NĂNG: Styling cho component MarketData
+ * - Styling grid hiển thị market data
+ * - Styling symbol controls và subscription
+ * - Responsive design cho market data
+ */
+
+/* Market Data Section */
+.market-data-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 25px;
+  /* Glass morphism */
+  backdrop-filter: blur(10px);
+}
+
+.market-data-section h2 {
+  margin-top: 0;
+  color: #00ff88;
+  text-align: center;
+  margin-bottom: 25px;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.market-data-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 25%;
+  width: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00ff88, transparent);
+}
+
+/* Symbol Controls */
+.symbol-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 25px;
+  gap: 25px;
+}
+
+.available-symbols {
+  flex: 1;
+}
+
+.available-symbols h4 {
+  color: #a0aec0;
+  margin-bottom: 15px;
+  font-size: 1.1em;
+}
+
+.symbol-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.symbol-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+}
+
+.symbol-item span {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+}
+
+.symbol-item button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  min-width: 100px;
+}
+
+.symbol-item button:hover {
+  transform: translateY(-1px);
+}
+
+.symbol-item button:first-of-type {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+  border: 1px solid #4CAF50;
+}
+
+.symbol-item button:last-of-type {
+  background: rgba(244, 67, 54, 0.2);
+  color: #F44336;
+  border: 1px solid #F44336;
+}
+
+.subscription-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subscription-controls button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.subscription-controls button:first-child {
+  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+  color: white;
+}
+
+.subscription-controls button:last-child {
+  background: linear-gradient(135deg, #F44336 0%, #C62828 100%);
+  color: white;
+}
+
+.subscription-controls button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Market Data Grid */
+.market-data-grid {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.grid-header, .grid-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  padding: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  align-items: center;
+}
+
+.grid-header {
+  background: rgba(0, 0, 0, 0.4);
+  font-weight: bold;
+  color: #a0aec0;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.grid-row {
+  transition: all 0.3s ease;
+}
+
+.grid-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.grid-row.subscribed {
+  background: rgba(76, 175, 80, 0.1);
+  border-left: 4px solid #4CAF50;
+}
+
+/* Responsive cho Market Data */
+@media (max-width: 480px) {
+  .market-data-grid {
+    font-size: 0.9em;
+  }
+  
+  .grid-header, .grid-row {
+    padding: 10px;
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .grid-header span:nth-child(3),
+  .grid-header span:nth-child(4),
+  .grid-row span:nth-child(3),
+  .grid-row span:nth-child(4) {
+    display: none;
+  }
+  
+  .symbol-controls {
+    flex-direction: column;
+  }
+}

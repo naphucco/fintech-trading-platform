@@ -1,0 +1,41 @@
+/**
+ * FILE: src/src/components/styles/Instructions.css
+ * CHỨC NĂNG: Styling cho hướng dẫn sử dụng
+ * - Styling instructions và documentation
+ * - Layout list và typography
+ */
+
+/* Instructions */
+.instructions {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 25px;
+  text-align: left;
+  margin-top: 30px;
+}
+
+.instructions h3 {
+  color: #00ff88;
+  margin-top: 0;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.instructions ol {
+  padding-left: 25px;
+  margin: 0;
+}
+
+.instructions li {
+  margin-bottom: 15px;
+  line-height: 1.6;
+  color: #a0aec0;
+  padding-left: 10px;
+}
+
+.instructions li strong {
+  color: #ffffff;
+}
