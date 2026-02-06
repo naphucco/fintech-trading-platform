@@ -6,25 +6,27 @@
  * - Responsive design cho market data
  */
 
-/* Market Data Section */
+/* =========================
+   Market Data Section
+   ========================= */
 .market-data-section {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03); /* nền mờ nhẹ */
+  border: 1px solid rgba(255, 255, 255, 0.05); /* viền mờ */
+  border-radius: 12px; /* bo góc */
   padding: 25px;
-  /* Glass morphism */
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px); /* hiệu ứng glass morphism */
 }
 
 .market-data-section h2 {
   margin-top: 0;
-  color: #00ff88;
+  color: #00ff88; /* màu xanh neon */
   text-align: center;
   margin-bottom: 25px;
   position: relative;
   padding-bottom: 10px;
 }
 
+/* gạch ngang trang trí dưới tiêu đề */
 .market-data-section h2::after {
   content: '';
   position: absolute;
@@ -35,24 +37,21 @@
   background: linear-gradient(90deg, transparent, #00ff88, transparent);
 }
 
-/* Symbol Controls */
+/* =========================
+   Symbol Controls (khu vực quản lý symbol)
+   ========================= */
 .symbol-controls {
-  display: flex;
-  justify-content: space-between;
   margin-bottom: 25px;
   gap: 25px;
 }
 
-.available-symbols {
-  flex: 1;
-}
-
-.available-symbols h4 {
+.symbol-controls h4 {
   color: #a0aec0;
   margin-bottom: 15px;
   font-size: 1.1em;
 }
 
+/* mỗi symbol-item là một dòng chứa tên symbol + nút subscribe/unsubscribe */
 .symbol-item {
   display: flex;
   justify-content: space-between;
@@ -65,16 +64,18 @@
   transition: all 0.3s ease;
 }
 
+/* hiệu ứng hover cho symbol-item */
 .symbol-item:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: translateX(5px);
 }
 
 .symbol-item span {
-  font-family: 'Courier New', monospace;
+  font-family: 'Courier New', monospace; /* font kiểu code */
   font-weight: bold;
 }
 
+/* nút Subscribe/Unsubscribe trong mỗi symbol-item */
 .symbol-item button {
   padding: 6px 12px;
   border: none;
@@ -90,22 +91,15 @@
   transform: translateY(-1px);
 }
 
-.symbol-item button:first-of-type {
-  background: rgba(76, 175, 80, 0.2);
-  color: #4CAF50;
-  border: 1px solid #4CAF50;
-}
-
-.symbol-item button:last-of-type {
-  background: rgba(244, 67, 54, 0.2);
-  color: #F44336;
-  border: 1px solid #F44336;
-}
-
+/* =========================
+   Subscription Controls (nút Subscribe All / Unsubscribe All)
+   ========================= */
 .subscription-controls {
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* nằm ngang */
   gap: 12px;
+  margin-bottom: 15px; /* tạo khoảng cách với tiêu đề Available Symbols */
+  justify-content: center; /* căn giữa */
 }
 
 .subscription-controls button {
@@ -117,32 +111,65 @@
   transition: all 0.3s ease;
 }
 
-.subscription-controls button:first-child {
+/* Nút Subscribe All (màu xanh lá) */
+.subscribe-all-btn {
   background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
   color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.subscription-controls button:last-child {
+/* Nút Unsubscribe All (màu đỏ) */
+.unsubscribe-all-btn {
   background: linear-gradient(135deg, #F44336 0%, #C62828 100%);
   color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
+/* Hover chung cho 2 nút tổng */
 .subscription-controls button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Market Data Grid */
+/* Nút Subscribe (mỗi symbol) */
+.symbol-item .subscribe-btn {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+  border: 1px solid #4CAF50;
+}
+
+/* Nút Unsubscribe (mỗi symbol) */
+.symbol-item .unsubscribe-btn {
+  background: rgba(244, 67, 54, 0.2);
+  color: #F44336;
+  border: 1px solid #F44336;
+}
+
+/* =========================
+   Market Data Grid
+   ========================= */
 .market-data-grid {
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  overflow: hidden;
+  overflow: hidden; /* tránh tràn nội dung */
 }
 
-.grid-header, .grid-row {
+/* header và row trong grid */
+.grid-header,
+.grid-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr; /* 4 cột: Symbol, Price, Change, Status */
   padding: 15px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   align-items: center;
@@ -161,33 +188,40 @@
   transition: all 0.3s ease;
 }
 
+/* hiệu ứng hover cho row */
 .grid-row:hover {
   background: rgba(255, 255, 255, 0.08);
 }
 
+/* row khi đang subscribed */
 .grid-row.subscribed {
   background: rgba(76, 175, 80, 0.1);
   border-left: 4px solid #4CAF50;
 }
 
-/* Responsive cho Market Data */
+/* =========================
+   Responsive cho Market Data
+   ========================= */
 @media (max-width: 480px) {
   .market-data-grid {
-    font-size: 0.9em;
+    font-size: 0.9em; /* chữ nhỏ hơn */
   }
-  
-  .grid-header, .grid-row {
+
+  .grid-header,
+  .grid-row {
     padding: 10px;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr; /* chỉ hiển thị 2 cột */
   }
-  
+
+  /* Ẩn cột Change và Status trên mobile */
   .grid-header span:nth-child(3),
   .grid-header span:nth-child(4),
   .grid-row span:nth-child(3),
   .grid-row span:nth-child(4) {
     display: none;
   }
-  
+
+  /* Symbol controls chuyển sang dọc */
   .symbol-controls {
     flex-direction: column;
   }

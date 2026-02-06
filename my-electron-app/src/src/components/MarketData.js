@@ -28,38 +28,46 @@ const MarketData = ({
 
       {/* Symbol Subscription Controls */}
       <div className="symbol-controls">
-        <div className="available-symbols">
-          <h4>Available Symbols:</h4>
-          {availableSymbols.map(symbol => (
-            <div key={symbol} className="symbol-item">
-              <span>{symbol}</span>
-              {subscribedSymbols.includes(symbol) ? (
-                <button onClick={() => unsubscribeMarketData([symbol])}>
-                  Unsubscribe
-                </button>
-              ) : (
-                <button onClick={() => subscribeMarketData([symbol])}>
-                  Subscribe
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-
         <div className="subscription-controls">
           <button
+            className="subscribe-all-btn"
             onClick={() => subscribeMarketData(availableSymbols)}
             disabled={wsStatus !== 'CONNECTED'}
           >
             Subscribe All
           </button>
           <button
+            className="unsubscribe-all-btn"
             onClick={() => unsubscribeMarketData(subscribedSymbols)}
             disabled={subscribedSymbols.length === 0}
           >
             Unsubscribe All
           </button>
         </div>
+
+
+        <h4>Available Symbols:</h4>
+        {availableSymbols.map(symbol => (
+          <div key={symbol} className="symbol-item">
+            <span>{symbol}</span>
+            {subscribedSymbols.includes(symbol) ? (
+              <button
+                className="unsubscribe-btn"
+                onClick={() => unsubscribeMarketData([symbol])}
+              >
+                Unsubscribe
+              </button>
+            ) : (
+              <button
+                className="subscribe-btn"
+                onClick={() => subscribeMarketData([symbol])}
+              >
+                Subscribe
+              </button>
+            )}
+
+          </div>
+        ))}
       </div>
 
       {/* Market Data Display */}
