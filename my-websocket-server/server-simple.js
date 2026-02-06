@@ -24,7 +24,7 @@ const WebSocket = require('ws');
 // - UUID đảm bảo uniqueness trên toàn hệ thống
 // - Tránh collision khi nhiều clients kết nối cùng lúc
 // - UUID v4 random, không thể đoán trước (bảo mật tốt hơn)
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require('uuid'); // Destructuring 
 
 // ==================== 2. TẠO WEBSOCKET SERVER ====================
 // Tạo WebSocket server instance
@@ -222,48 +222,184 @@ wss.on('connection', (ws, req) => {
                     // - Prefix 'ORD_' để dễ nhận diện trong logs
                     const orderId = 'ORD_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
-                    // BƯỚC 1: Gửi order acknowledgment
+                    // BƯỚC 1: Gửi order acknowledgment NGAY LẬP TỨC
                     // TẠI SAO không xử lý order ngay?
-                    // - Trading thực tế: order phải qua validation, risk checks
-                    // - Asynchronous processing để không block connection
-                    // - Cho phép client biết order đã được nhận
+                    // - Trading thực tế: order phải qua validation, risk checks (có thể mất vài ms đến vài trăm ms)
+                    // - Asynchronous processing để không block WebSocket connection
+                    // - Cho phép client biết order đã được nhận (user feedback immediate)
+                    // - Client có thể tiếp tục gửi messages khác trong khi order đang xử lý
                     ws.send(JSON.stringify({
                         type: 'ORDER_ACK',
                         orderId: orderId,
-                        status: 'PENDING',  // Trạng thái initial
-                        timestamp: Date.now()
+                        status: 'RECEIVED',  // Trạng thái: Đã nhận, chờ xử lý
+                        timestamp: Date.now(),
+                        message: 'Order received and queued for processing'
                     }));
 
-                    // BƯỚC 2: Mô phỏng xử lý order (async)
-                    // TRONG THỰC TẾ: Gửi đến Matching Engine
-                    // Engine tìm matching buy/sell orders
-                    // Nếu match → filled, không match → rejected/cancelled
-                    setTimeout(() => {
-                        // Mô phỏng 70% thành công (filled)
-                        // Thực tế: phụ thuộc vào market liquidity, price
-                        const isFilled = Math.random() > 0.3;
+                    // BƯỚC 2: Xử lý order với ASYNC/AWAIT pattern
+                    // TẠI SAO dùng async/await thay vì chỉ setTimeout?
+                    // - Dễ đọc, dễ maintain (linear code flow)
+                    // - Error handling tốt hơn với try-catch
+                    // - Có thể thêm các async steps phức tạp (validation, risk checks, etc.)
+                    // - Phản ánh đúng bản chất không đồng bộ của trading system
+                    // ⚠️ QUAN TRỌNG: Dùng IIFE (Immediately Invoked Function Expression) để:
+                    // - Tạo execution context riêng cho async operation
+                    // - Không block message handler chính
+                    // - Cho phép xử lý nhiều orders song song
+                    (async () => {
+                        try {
+                            // SIMULATION: Mô phỏng các bước xử lý order thực tế
 
-                        if (isFilled) {
-                            // Order executed successfully
-                            // 'ws' là WebSocket instance của client HIỆN TẠI
+                            // BƯỚC 2.1: Validation (async simulation)
+                            // TRONG THỰC TẾ: Kiểm tra order format, symbol tồn tại, trading hours, etc.
+                            // ⏱️ Thời gian: 50-200ms trong thực tế
+                            console.log(`   ⏳ Validating order ${orderId}...`);
+                            await simulateAsyncDelay(100, 300); // Giả lập delay validation
+                            const isValid = validateOrderFormat(data.order);
+
+                            if (!isValid) {
+                                throw new Error('INVALID_ORDER_FORMAT');
+                            }
+
+                            // Cập nhật status cho client biết đang validation
                             ws.send(JSON.stringify({
-                                type: 'ORDER_FILLED',
+                                type: 'ORDER_STATUS_UPDATE',
                                 orderId: orderId,
-                                status: 'FILLED',
-                                filledPrice: marketData[data.order.symbol]?.price || 45000,
-                                filledQuantity: data.order.quantity || 1,
-                                timestamp: Date.now()
+                                status: 'VALIDATING',
+                                timestamp: Date.now(),
+                                message: 'Order validation in progress'
                             }));
-                        } else {
-                            // Order rejected (no liquidity)
+
+                            // BƯỚC 2.2: Risk Checks (async simulation)
+                            // TRONG THỰC TẾ: Kiểm tra position limits, margin requirements, credit limits
+                            // ⏱️ Thời gian: 100-500ms trong thực tế
+                            console.log(`   ⏳ Running risk checks for order ${orderId}...`);
+                            await simulateAsyncDelay(200, 500);
+                            const riskApproved = Math.random() > 0.1; // 90% pass rate
+
+                            if (!riskApproved) {
+                                throw new Error('RISK_CHECK_FAILED');
+                            }
+
+                            // Cập nhật status cho client biết đang risk check
                             ws.send(JSON.stringify({
-                                type: 'ORDER_REJECTED',
+                                type: 'ORDER_STATUS_UPDATE',
                                 orderId: orderId,
-                                reason: 'INSUFFICIENT_LIQUIDITY',
-                                timestamp: Date.now()
+                                status: 'RISK_CHECKING',
+                                timestamp: Date.now(),
+                                message: 'Risk assessment in progress'
+                            }));
+
+                            // BƯỚC 2.3: Market Data Check (real-time)
+                            // TRONG THỰC TẾ: Kiểm tra current price, spreads, market conditions
+                            // ⏱️ Thời gian: <10ms (real-time check)
+                            const currentPrice = marketData[data.order?.symbol]?.price;
+                            if (!currentPrice) {
+                                throw new Error('SYMBOL_NOT_FOUND');
+                            }
+
+                            // BƯỚC 2.4: Matching Engine Simulation (async - VARIABLE TIME)
+                            // TRONG THỰC TẾ: Gửi đến Matching Engine
+                            // Engine tìm matching buy/sell orders trong order book
+                            // ⏱️ Thời gian: BIẾN ĐỘNG RẤT LỚN (1ms - 30s+)
+                            // - Market orders: thường <100ms nếu có liquidity
+                            // - Limit orders: có thể pending vài giây đến vài phút chờ price
+                            // - Large orders: có thể partial fill trong nhiều phút
+                            console.log(`   ⏳ Sending order ${orderId} to matching engine...`);
+
+                            // Gửi status update
+                            ws.send(JSON.stringify({
+                                type: 'ORDER_STATUS_UPDATE',
+                                orderId: orderId,
+                                status: 'SUBMITTED_TO_MATCHING_ENGINE',
+                                timestamp: Date.now(),
+                                message: 'Order submitted for matching'
+                            }));
+
+                            // Giả lập matching engine delay (1-3 giây như code gốc)
+                            // Thực tế delay phụ thuộc vào:
+                            // - Market liquidity (liquid markets nhanh hơn)
+                            // - Order type (market order nhanh hơn limit order)
+                            // - Order size (small orders nhanh hơn)
+                            // - Market volatility (high volatility chậm hơn)
+                            const matchingDelay = Math.random() * 2000 + 1000; // 1-3 giây
+                            await simulateAsyncDelay(matchingDelay - 200, matchingDelay + 200);
+
+                            // BƯỚC 2.5: Execution Result
+                            // Mô phỏng 70% thành công (filled) - giữ nguyên logic gốc
+                            // Thực tế: phụ thuộc vào market liquidity, price, order book depth
+                            const isFilled = Math.random() > 0.3;
+
+                            if (isFilled) {
+                                // Order executed successfully
+                                // TRONG THỰC TẾ: Có thể partial fill (chỉ fill một phần)
+                                // Có thể multiple fills (nhiều lần fill với prices khác nhau)
+                                const filledPrice = currentPrice * (1 + (Math.random() - 0.5) * 0.02); // ±1%
+                                const filledQuantity = data.order.quantity || 1;
+
+                                console.log(`   ✅ Order ${orderId} FILLED at $${filledPrice.toFixed(2)}`);
+
+                                // 'ws' là WebSocket instance của client HIỆN TẠI
+                                ws.send(JSON.stringify({
+                                    type: 'ORDER_FILLED',
+                                    orderId: orderId,
+                                    status: 'FILLED',
+                                    filledPrice: filledPrice,
+                                    filledQuantity: filledQuantity,
+                                    executionTime: Date.now(), // Thời điểm thực sự executed
+                                    averagePrice: filledPrice, // Với multiple fills sẽ là avg
+                                    totalFilled: filledQuantity,
+                                    remainingQuantity: 0,
+                                    timestamp: Date.now()
+                                }));
+                            } else {
+                                // Order rejected (no liquidity)
+                                // TRONG THỰC TẾ: Có thể bị reject vì nhiều lý do:
+                                // - No liquidity (không có matching orders)
+                                // - Price moved away (limit order không khớp)
+                                // - Market closed
+                                // - Circuit breaker triggered
+                                console.log(`   ❌ Order ${orderId} REJECTED - insufficient liquidity`);
+
+                                ws.send(JSON.stringify({
+                                    type: 'ORDER_REJECTED',
+                                    orderId: orderId,
+                                    status: 'REJECTED',
+                                    reason: 'INSUFFICIENT_LIQUIDITY',
+                                    rejectionTime: Date.now(),
+                                    suggestedAction: 'TRY_LIMIT_ORDER_OR_ADJUST_PRICE',
+                                    timestamp: Date.now()
+                                }));
+                            }
+
+                            // BƯỚC 2.6: Post-trade processing (async - background)
+                            // TRONG THỰC TẾ: Settlement, position updates, P&L calculation
+                            // ⚡ KHÔNG block client - xử lý background
+                            setTimeout(async () => {
+                                console.log(`   📊 Post-trade processing for ${orderId}...`);
+                                // Có thể gửi confirmation email, update database, etc.
+                            }, 100);
+
+                        } catch (error) {
+                            // ERROR HANDLING: Xử lý lỗi trong quá trình order processing
+                            // TRONG THỰC TẾ: Cần logging đầy đủ, alerting, recovery procedures
+                            console.error(`   🚨 Order ${orderId} processing failed:`, error.message);
+
+                            ws.send(JSON.stringify({
+                                type: 'ORDER_ERROR',
+                                orderId: orderId,
+                                status: 'ERROR',
+                                errorCode: error.message,
+                                errorMessage: getErrorMessage(error.message),
+                                timestamp: Date.now(),
+                                // Thông tin debug (chỉ development)
+                                ...(process.env.NODE_ENV === 'development' && { debug: error.stack })
                             }));
                         }
-                    }, Math.random() * 2000 + 1000); // Random delay 1-3s
+                    })(); // ⚡ IIFE: Immediately Invoked Function Expression
+                    // Từ đây message handler tiếp tục xử lý messages khác NGAY LẬP TỨC
+
+                    console.log(`   ⚡ Order ${orderId} queued for async processing`);
                     break;
 
                 // ============ CASE 3: HEARTBEAT ============
@@ -440,3 +576,39 @@ process.on('SIGINT', () => {
         process.exit(0);
     });
 });
+
+// ==================== HELPER FUNCTIONS ====================
+
+/**
+ * Giả lập async delay với random variation
+ * @param {number} minDelay - Minimum delay in ms
+ * @param {number} maxDelay - Maximum delay in ms  
+ * @returns {Promise<void>}
+ */
+function simulateAsyncDelay(minDelay, maxDelay) {
+    const delay = Math.random() * (maxDelay - minDelay) + minDelay;
+    return new Promise(resolve => setTimeout(resolve, delay));
+}
+
+/**
+ * Validate order format cơ bản
+ * TRONG THỰC TẾ: Phức tạp hơn nhiều (regulatory checks, etc.)
+ */
+function validateOrderFormat(order) {
+    if (!order || !order.symbol) return false;
+    if (order.quantity && order.quantity <= 0) return false;
+    return true;
+}
+
+/**
+ * Map error codes to user-friendly messages
+ */
+function getErrorMessage(errorCode) {
+    const errorMap = {
+        'INVALID_ORDER_FORMAT': 'Order format is invalid',
+        'RISK_CHECK_FAILED': 'Order rejected by risk management system',
+        'SYMBOL_NOT_FOUND': 'Trading symbol not found',
+        'INSUFFICIENT_LIQUIDITY': 'Not enough liquidity in the market'
+    };
+    return errorMap[errorCode] || 'Unknown error occurred';
+}

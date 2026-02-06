@@ -141,124 +141,274 @@ function App() {
       };
 
       // Event listener khi nhận message từ server
+      // ==================== MESSAGE HANDLER CHI TIẾT ====================
       ws.onmessage = (event) => {
-        // WHAT: Xử lý message từ server
-        // WHY: Server gửi nhiều loại message (welcome, market data, order status,...)
-        // HOW: Parse JSON và xử lý theo type
+        // TRONG THỰC TẾ: Server gửi nhiều loại message khác nhau
+        // MỖI LOẠI cần xử lý khác nhau để cập nhật UI
+        // CẦN parse JSON và phân loại theo field 'type' giống BE
+
         try {
           const data = JSON.parse(event.data);
-          console.log('Received from server:', data);
+          console.log('📨 Received from server:', data);
 
-          // Xử lý message theo type
+          // SWITCH-CASE để xử lý từng loại message
+          // TẠI SAO dùng switch-case? 
+          // - Dễ đọc, dễ maintain khi có nhiều message types
+          // - Performance tốt hơn cho nhiều cases
+          // - Tách biệt logic xử lý cho từng message type
+
           switch (data.type) {
+            // ============ CASE 1: WELCOME MESSAGE ============
             case 'WELCOME':
-              // Server gửi khi kết nối thành công
-              // Lưu client ID để dùng cho các request sau
+              // SERVER GỬI KHI: Client kết nối thành công lần đầu
+              // MỤC ĐÍCH: Cung cấp client ID và thông tin khởi tạo
+              // XỬ LÝ: Lưu client ID để dùng cho các request sau
+              console.log(`🎉 Server welcome: ${data.message}`);
               setClientId(data.clientId);
               break;
 
-            // Server bây giờ gửi subscribedSymbols trong ACK
+            // ============ CASE 2: SUBSCRIBE ACKNOWLEDGMENT ============
             case 'SUBSCRIBE_ACK':
-              // Server xác nhận subscribe thành công
-              // Cập nhật subscribedSymbols từ server (cho chính xác)
+              // SERVER GỬI KHI: Client gửi SUBSCRIBE_MARKET_DATA thành công
+              // MỤC ĐÍCH: Xác nhận subscription và gửi danh sách symbols hiện tại
+              // XỬ LÝ: Cập nhật state subscribedSymbols từ server
+              // TẠI SAO cần lấy từ server? Đảm bảo đồng bộ giữa client và server
+
+              console.log(`✅ Subscribed to ${data.subscribedCount} symbols`);
+
               if (data.subscribedSymbols) {
+                // CẬP NHẬT STATE: Ghi đè toàn bộ subscribedSymbols từ server
+                // TẠI SAO ghi đè thay vì merge? Đảm bảo client luôn có view chính xác
                 setSubscribedSymbols(data.subscribedSymbols);
               }
-              console.log(`✅ Subscribed to ${data.subscribedCount} symbols`);
               break;
 
+            // ============ CASE 3: UNSUBSCRIBE ACKNOWLEDGMENT ============
             case 'UNSUBSCRIBE_ACK':
-              // Server xác nhận unsubscribe thành công
-              // Cập nhật subscribedSymbols từ server
+              // SERVER GỬI KHI: Client gửi UNSUBSCRIBE_MARKET_DATA thành công
+              // MỤC ĐÍCH: Xác nhận unsubscribe và gửi danh sách symbols còn lại
+              // XỬ LÝ: Cập nhật state với remaining subscriptions
+
+              console.log(`✅ Unsubscribed from symbols:`, data.unsubscribedSymbols);
+
               if (data.remainingSubscriptions) {
+                // CẬP NHẬT STATE: Chỉ giữ lại các symbols server nói còn subscribe
                 setSubscribedSymbols(data.remainingSubscriptions);
               }
-              console.log(`✅ Unsubscribed from symbols:`, data.unsubscribedSymbols);
               break;
 
+            // ============ CASE 4: MARKET DATA UPDATES ============
             case 'MARKET_DATA':
-              // Server gửi real-time market data
-              // Cập nhật state với data mới
-              // WHAT: data có thể là toàn bộ market data hoặc data cho 1 symbol
-              // WHY: Cần cập nhật UI với giá mới nhất
-              // HOW: Merge data mới vào state hiện tại
+              // SERVER GỬI KHI: 
+              // 1. Client mới subscribe (isInitial: true) - snapshot
+              // 2. Định kỳ (mỗi 2s) - real-time updates
+              // MỤC ĐÍCH: Cung cấp giá real-time cho các symbols
+              // XỬ LÝ: Cập nhật marketData state
 
               if (data.symbol && data.isInitial) {
-                // Trường hợp 1: Initial data cho 1 symbol cụ thể
+                // TRƯỜNG HỢP 1: Initial snapshot cho 1 symbol cụ thể
+                // TẠI SAO có isInitial flag? Để phân biệt snapshot vs update
                 setMarketData(prev => ({
-                  ...prev,
-                  [data.symbol]: data.data
+                  ...prev,  // Giữ lại data cũ
+                  [data.symbol]: data.data  // Thêm/update symbol mới
                 }));
               } else if (data.data) {
-                // Trường hợp 2: Batch updates cho nhiều symbols
+                // TRƯỜNG HỢP 2: Batch updates cho nhiều symbols
                 // Server chỉ gửi symbols client đã subscribe
                 setMarketData(prev => ({
                   ...prev,
-                  ...data.data  // Merge toàn bộ data mới
+                  ...data.data  // Merge tất cả data mới
                 }));
               }
               break;
 
+            // ============ CASE 5: ORDER ACKNOWLEDGMENT ============
             case 'ORDER_ACK':
-              // Server xác nhận đã nhận order
-              // Cập nhật order với status PENDING
+              // SERVER GỬI KHI: Server nhận order và bắt đầu xử lý
+              // MỤC ĐÍCH: Xác nhận order đã được nhận, cung cấp order ID
+              // XỬ LÝ: Thêm order mới vào state với status PROCESSING
+
+              console.log(`📝 Order ${data.orderId} acknowledged by server`);
+
+              // THÊM ORDER MỚI VÀO STATE
               setOrders(prev => [...prev, {
                 id: data.orderId,
                 symbol: orderForm.symbol,
                 quantity: orderForm.quantity,
                 side: orderForm.side,
-                status: 'PENDING',
-                timestamp: data.timestamp
+                status: data.status || 'PROCESSING',  // Dùng status từ server
+                timestamp: data.timestamp,
+                message: data.message || 'Order received and queued for processing'
               }]);
+
+              // HIỂN THỊ NOTIFICATION CHO USER
+              // TẠI SAO cần notification? User cần biết ngay order đã được nhận
+              if (window.electronAPI && data.message) {
+                window.electronAPI.showNotification(
+                  'Order Received',
+                  data.message
+                );
+              }
               break;
 
-            case 'ORDER_FILLED':
-              // Server báo order đã được filled (khớp lệnh)
-              // Cập nhật status order thành FILLED
+            // ============ CASE 6: ORDER STATUS UPDATES (MỚI) ============
+            case 'ORDER_STATUS_UPDATE':
+              // SERVER GỬI KHI: Order chuyển trạng thái trong quá trình xử lý
+              // MỤC ĐÍCH: Cung cấp real-time updates về tiến trình order
+              // VÍ DỤ: VALIDATING → RISK_CHECKING → SUBMITTED_TO_MATCHING_ENGINE
+              // XỬ LÝ: Cập nhật status của order hiện có
+
+              console.log(`📊 Order ${data.orderId} status update: ${data.status}`);
+
+              // CẬP NHẬT ORDER HIỆN CÓ TRONG STATE
               setOrders(prev => prev.map(order =>
                 order.id === data.orderId
-                  ? { ...order, status: 'FILLED', filledPrice: data.filledPrice }
+                  ? {
+                    ...order,  // Giữ nguyên các field cũ
+                    status: data.status,  // Cập nhật status mới
+                    ...(data.message && { statusMessage: data.message }),
+                    lastUpdated: data.timestamp  // Thời điểm cập nhật
+                  }
+                  : order
+              ));
+              break;
+
+            // ============ CASE 7: ORDER ERROR (MỚI) ============
+            case 'ORDER_ERROR':
+              // SERVER GỬI KHI: Có lỗi xảy ra trong quá trình xử lý order
+              // MỤC ĐÍCH: Thông báo lỗi chi tiết cho user
+              // VÍ DỤ: INVALID_ORDER_FORMAT, RISK_CHECK_FAILED, SYMBOL_NOT_FOUND
+              // XỬ LÝ: Cập nhật order thành ERROR với thông tin lỗi
+
+              console.error(`❌ Order ${data.orderId} error:`, data.errorCode);
+
+              // CẬP NHẬT ORDER THÀNH TRẠNG THÁI ERROR
+              setOrders(prev => prev.map(order =>
+                order.id === data.orderId
+                  ? {
+                    ...order,
+                    status: 'ERROR',  // Đánh dấu là lỗi
+                    errorCode: data.errorCode,  // Mã lỗi (ngắn)
+                    errorMessage: data.errorMessage,  // Message chi tiết
+                    timestamp: data.timestamp  // Thời điểm lỗi
+                  }
                   : order
               ));
 
-              // Hiển thị notification cho người dùng
+              // HIỂN THỊ ERROR NOTIFICATION
+              // TẠI SAO cần notification? User cần biết ngay khi có lỗi
               if (window.electronAPI) {
+                window.electronAPI.showNotification(
+                  'Order Error',
+                  `${data.errorCode}: ${data.errorMessage || 'Processing failed'}`
+                );
+              }
+              break;
+
+            // ============ CASE 8: ORDER FILLED ============
+            case 'ORDER_FILLED':
+              // SERVER GỬI KHI: Order được khớp thành công (filled)
+              // MỤC ĐÍCH: Thông báo order đã executed với price và quantity
+              // XỬ LÝ: Cập nhật order thành FILLED với execution details
+
+              console.log(`✅ Order ${data.orderId} filled at $${data.filledPrice}`);
+
+              // CẬP NHẬT ORDER VỚI THÔNG TIN EXECUTION
+              setOrders(prev => prev.map(order =>
+                order.id === data.orderId
+                  ? {
+                    ...order,
+                    status: 'FILLED',  // Trạng thái cuối cùng
+                    filledPrice: data.filledPrice,  // Giá khớp
+                    filledQuantity: data.filledQuantity,  // Số lượng khớp
+                    averagePrice: data.averagePrice || data.filledPrice,  // Giá trung bình (nếu multiple fills)
+                    totalFilled: data.totalFilled || data.filledQuantity,  // Tổng số lượng đã khớp
+                    remainingQuantity: data.remainingQuantity || 0,  // Số lượng còn lại (nếu partial fill)
+                    executionTime: data.executionTime,  // Thời điểm khớp
+                    lastUpdated: data.timestamp  // Thời điểm cập nhật
+                  }
+                  : order
+              ));
+
+              // HIỂN THỊ SUCCESS NOTIFICATION
+              if (window.electronAPI) {
+                // Chỉ hiển thị 8 ký tự đầu của order ID cho gọn
                 window.electronAPI.showNotification(
                   'Order Filled',
-                  `Order ${data.orderId} filled at $${data.filledPrice}`
+                  `Order ${data.orderId.slice(0, 8)}... filled ${data.filledQuantity} @ $${data.filledPrice.toFixed(2)}`
                 );
               }
               break;
 
+            // ============ CASE 9: ORDER REJECTED ============
             case 'ORDER_REJECTED':
-              // Server báo order bị rejected
-              // Cập nhật status order thành REJECTED
+              // SERVER GỬI KHI: Order bị reject (không thể khớp)
+              // MỤC ĐÍCH: Thông báo lý do reject và đề xuất hành động
+              // XỬ LÝ: Cập nhật order thành REJECTED với lý do
+
+              console.log(`❌ Order ${data.orderId} rejected: ${data.reason}`);
+
+              // CẬP NHẬT ORDER VỚI THÔNG TIN REJECT
               setOrders(prev => prev.map(order =>
                 order.id === data.orderId
-                  ? { ...order, status: 'REJECTED', reason: data.reason }
+                  ? {
+                    ...order,
+                    status: 'REJECTED',  // Trạng thái cuối cùng
+                    rejectionTime: data.rejectionTime,  // Thời điểm reject
+                    reason: data.reason,  // Lý do reject
+                    suggestedAction: data.suggestedAction,  // Đề xuất hành động (nếu có)
+                    lastUpdated: data.timestamp  // Thời điểm cập nhật
+                  }
                   : order
               ));
 
-              // Hiển thị notification cho người dùng
+              // HIỂN THỊ REJECTION NOTIFICATION VỚI ĐỀ XUẤT
               if (window.electronAPI) {
+                const message = data.suggestedAction
+                  ? `${data.reason}. ${data.suggestedAction}`  // Kết hợp lý do + đề xuất
+                  : data.reason;  // Chỉ hiển thị lý do
+
                 window.electronAPI.showNotification(
                   'Order Rejected',
-                  `Order ${data.orderId} rejected: ${data.reason}`
+                  message
                 );
               }
               break;
 
+            // ============ CASE 10: HEARTBEAT ACKNOWLEDGMENT ============
             case 'HEARTBEAT_ACK':
             case 'PONG':
-              // Server phản hồi heartbeat/ping
-              // Không cần làm gì, chỉ để biết connection vẫn sống
+              // SERVER GỬI KHI: Client gửi HEARTBEAT hoặc PING
+              // MỤC ĐÍCH: Xác nhận connection vẫn sống
+              // XỬ LÝ: Không cần làm gì, chỉ để biết connection OK
+
+              // TRONG THỰC TẾ: Có thể tính latency từ timestamp
+              // const latency = Date.now() - data.timestamp;
+              // console.log(`❤️ Heartbeat latency: ${latency}ms`);
               break;
 
+            // ============ DEFAULT: UNKNOWN MESSAGE TYPE ============
             default:
-              console.log('Unknown message type:', data.type);
+              // XỬ LÝ KHI: Server gửi message type không xác định
+              // MỤC ĐÍCH: Log để debug, không crash app
+              console.log('⚠️ Unknown message type from server:', data.type);
           }
         } catch (error) {
-          console.error('Error parsing message:', error);
+          // ERROR HANDLING KHI PARSE JSON THẤT BẠI
+          // TẠI SAO cần try-catch? 
+          // - Server có thể gửi invalid JSON (lỗi server)
+          // - Network corruption có thể làm hỏng data
+          // - Malicious server (trong production cần validation)
+
+          console.error('❌ Error parsing server message:', error);
+
+          // TRONG PRODUCTION: Có thể gửi error report hoặc reconnect
+          if (window.electronAPI) {
+            window.electronAPI.showNotification(
+              'Connection Error',
+              'Failed to parse server message'
+            );
+          }
         }
       };
 
@@ -644,31 +794,146 @@ function App() {
               </div>
             </div>
 
-            {/* Orders History */}
-            <div className="orders-history">
-              <h3>📋 Order History</h3>
+            {/* ==================== ORDER HISTORY COMPONENT CHI TIẾT ==================== */}
 
+            <div className="orders-history">
+              {/* HEADER VỚI TỔNG SỐ ORDERS */}
+              <h3>📋 Order History ({orders.length})</h3>
+
+              {/* HIỂN THỊ KHI CHƯA CÓ ORDER */}
               {orders.length === 0 ? (
-                <p>No orders placed yet</p>
+                <p className="no-orders">No orders placed yet. Place your first order above!</p>
               ) : (
                 <div className="orders-list">
-                  {orders.slice().reverse().map(order => (
-                    <div key={order.id} className={`order-item ${order.status.toLowerCase()}`}>
-                      <div className="order-header">
-                        <span className="order-id">{order.id}</span>
-                        <span className={`order-status ${order.status.toLowerCase()}`}>
-                          {order.status}
-                        </span>
+                  {/* HIỂN THỊ ORDERS THEO THỨ TỰ MỚI NHẤT ĐẦU TIÊN */}
+                  {/* TẠI SAO dùng slice().reverse()? 
+                      - slice(): tạo bản copy để không mutate state gốc
+                      - reverse(): đảo ngược thứ tự (mới nhất lên đầu)
+                  */}
+                  {orders.slice().reverse().map(order => {
+                    // ============ HÀM PHỤ TRỢ: XÁC ĐỊNH MÀU THEO STATUS ============
+                    // TẠI SAO cần hàm này? Để UI nhất quán, dễ nhận biết trạng thái
+                    const getStatusColor = (status) => {
+                      switch (status) {
+                        case 'FILLED': return '#2ecc71';        // Xanh lá: Thành công
+                        case 'PROCESSING': return '#3498db';    // Xanh dương: Đang xử lý
+                        case 'VALIDATING': return '#9b59b6';    // Tím: Đang validate
+                        case 'RISK_CHECKING': return '#e67e22'; // Cam: Đang kiểm tra risk
+                        case 'SUBMITTED_TO_MATCHING_ENGINE': return '#1abc9c'; // Xanh ngọc: Đã gửi matching
+                        case 'REJECTED': return '#e74c3c';      // Đỏ: Bị reject
+                        case 'ERROR': return '#c0392b';         // Đỏ đậm: Lỗi
+                        default: return '#95a5a6';              // Xám: Trạng thái khác
+                      }
+                    };
+
+                    // ============ HÀM PHỤ TRỢ: XÁC ĐỊNH ICON THEO STATUS ============
+                    // TẠI SAO cần icon? Giúp user nhận biết nhanh trạng thái
+                    const getStatusIcon = (status) => {
+                      switch (status) {
+                        case 'FILLED': return '✅';          // Checkmark: Thành công
+                        case 'PROCESSING': return '⏳';      // Hourglass: Đang xử lý
+                        case 'VALIDATING': return '🔍';      // Magnifying glass: Đang kiểm tra
+                        case 'RISK_CHECKING': return '⚖️';   // Scale: Đang đánh giá risk
+                        case 'SUBMITTED_TO_MATCHING_ENGINE': return '⚡'; // Lightning: Nhanh
+                        case 'REJECTED': return '❌';        // Cross: Bị từ chối
+                        case 'ERROR': return '🚨';           // Siren: Có lỗi
+                        default: return '📝';                // Memo: Trạng thái chung
+                      }
+                    };
+
+                    // ============ RENDER MỖI ORDER ITEM ============
+                    return (
+                      <div
+                        key={order.id}
+                        className="order-item"
+                        // STYLE INLINE: Thêm border màu theo status
+                        // TẠI SAO dùng inline style? Để động thay đổi màu theo status
+                        style={{ borderLeft: `4px solid ${getStatusColor(order.status)}` }}
+                      >
+                        {/* ORDER HEADER: Hiển thị ID và Status */}
+                        <div className="order-header">
+                          {/* ORDER ID (cắt ngắn cho đẹp UI) */}
+                          <span className="order-id" title={order.id}>
+                            {/* HIỂN THỊ 10 KÝ TỰ ĐẦU + "..." để UI gọn */}
+                            {order.id.slice(0, 10)}...
+                          </span>
+
+                          {/* ORDER STATUS VỚI MÀU VÀ ICON */}
+                          <span
+                            className="order-status"
+                            // MÀU CHỮ THEO STATUS
+                            style={{ color: getStatusColor(order.status) }}
+                          >
+                            {/* KẾT HỢP ICON + TEXT STATUS */}
+                            {getStatusIcon(order.status)} {order.status}
+                          </span>
+                        </div>
+
+                        {/* ORDER DETAILS: Hiển thị chi tiết order */}
+                        <div className="order-details">
+                          {/* ROW 1: SYMBOL */}
+                          <div className="detail-row">
+                            <span className="detail-label">Symbol:</span>
+                            <span className="detail-value">{order.symbol}</span>
+                          </div>
+
+                          {/* ROW 2: SIDE (BUY/SELL) */}
+                          <div className="detail-row">
+                            <span className="detail-label">Side:</span>
+                            {/* THÊM CLASS 'buy' hoặc 'sell' để styling khác nhau */}
+                            <span className={`detail-value ${order.side.toLowerCase()}`}>
+                              {order.side}
+                            </span>
+                          </div>
+
+                          {/* ROW 3: QUANTITY */}
+                          <div className="detail-row">
+                            <span className="detail-label">Quantity:</span>
+                            <span className="detail-value">{order.quantity}</span>
+                          </div>
+
+                          {/* ROW 4: FILLED PRICE (chỉ hiển thị nếu order đã filled) */}
+                          {/* TẠI SAO conditional rendering? Không hiển thị field không có data */}
+                          {order.filledPrice && (
+                            <div className="detail-row">
+                              <span className="detail-label">Filled Price:</span>
+                              <span className="detail-value">
+                                {/* ĐỊNH DẠNG SỐ VỚI 2 CHỮ SỐ THẬP PHÂN */}
+                                ${order.filledPrice.toFixed(2)}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* ROW 5: STATUS MESSAGE (nếu có) */}
+                          {/* HIỂN THỊ THÔNG ĐIỆP CHI TIẾT TỪ SERVER */}
+                          {order.statusMessage && (
+                            <div className="detail-row">
+                              <span className="detail-label">Status:</span>
+                              <span className="detail-value">{order.statusMessage}</span>
+                            </div>
+                          )}
+
+                          {/* ROW 6: ERROR MESSAGE (nếu có lỗi) */}
+                          {/* HIỂN THỊ VỚI STYLING ĐẶC BIỆT CHO LỖI */}
+                          {order.errorMessage && (
+                            <div className="detail-row error">
+                              <span className="detail-label">Error:</span>
+                              <span className="detail-value">{order.errorMessage}</span>
+                            </div>
+                          )}
+
+                          {/* ROW 7: TIME STAMP */}
+                          <div className="detail-row time">
+                            <span className="detail-label">Time:</span>
+                            <span className="detail-value">
+                              {/* ĐỊNH DẠNG TIME THEO LOCALE CỦA USER */}
+                              {new Date(order.timestamp).toLocaleTimeString()}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="order-details">
-                        <span>{order.side} {order.symbol}</span>
-                        <span>Qty: {order.quantity}</span>
-                        {order.filledPrice && (
-                          <span>Price: ${order.filledPrice.toFixed(2)}</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
